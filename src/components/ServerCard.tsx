@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Link } from "react-router-dom";
 import { useSocket } from "../hooks/useSocket";
 import AdvancedGauge from "./AdvancedGauge";
@@ -10,7 +10,7 @@ interface ServerCardProps {
   removeServer: (address: string) => void;
 }
 
-const ServerCard: React.FC<ServerCardProps> = ({
+const ServerCard: React.FC<ServerCardProps> = memo(({
   name,
   address,
   removeServer,
@@ -56,6 +56,8 @@ const ServerCard: React.FC<ServerCardProps> = ({
       </button>
     </div>
   );
-};
+});
+
+ServerCard.displayName = 'ServerCard';
 
 export default ServerCard;

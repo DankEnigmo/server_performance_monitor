@@ -48,6 +48,14 @@ export interface GpuMetric {
   temperature: number;
 }
 
+export interface Process {
+  pid: number;
+  name: string;
+  cpu: number;
+  mem: number; // In MB
+  command: string;
+}
+
 export interface Metrics {
   ts: number;
   cpu: {
@@ -61,4 +69,5 @@ export interface Metrics {
     total: number;
   };
   gpu: GpuMetric[];
+  processes: Process[]; // New property for top processes
 }

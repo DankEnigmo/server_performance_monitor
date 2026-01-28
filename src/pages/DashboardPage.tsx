@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { useServers } from "../hooks/useServers";
 import ServerCard from "../components/ServerCard";
 import FloatingLabelInput from "../components/ui/FloatingLabelInput";
 import { GlowingEffect } from "../components/ui/GlowingEffect";
 
-const DashboardPage: React.FC = () => {
+const DashboardPage: React.FC = memo(() => {
   const { servers, addServer, removeServer } = useServers();
   const [newServerName, setNewServerName] = useState("");
   const [newServerAddress, setNewServerAddress] = useState("");
@@ -82,6 +82,8 @@ const DashboardPage: React.FC = () => {
       )}
     </div>
   );
-};
+});
+
+DashboardPage.displayName = "DashboardPage";
 
 export default DashboardPage;

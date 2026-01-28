@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useState } from "react";
+import React, { useRef, useLayoutEffect, useState, useCallback } from "react";
 import UplotReact from "uplot-react";
 import "uplot/dist/uPlot.min.css";
 import type { AlignedData, Options, Series } from "uplot";
@@ -20,18 +20,43 @@ const seriesColors = [
 
 const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
   const chartRef = useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [chartWidth, setChartWidth] = useState(400);
+
+  const updateChartWidth = useCallback(() => {
+    if (chartRef.current) {
+      setChartWidth(chartRef.current.clientWidth);
+    }
+  }, []);
 
   useLayoutEffect(() => {
     if (!chartRef.current) return;
+
+    // Clean up any existing observer
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+    }
+
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         setChartWidth(entries[0].contentRect.width);
       }
     });
+
     observer.observe(chartRef.current);
-    return () => observer.disconnect();
-  }, []);
+    resizeObserverRef.current = observer;
+
+    // Initial width update
+    updateChartWidth();
+
+    return () => {
+      // Properly disconnect the observer
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+    };
+  }, [updateChartWidth]);
 
   const isMultiSeries = data.length > 2;
 
@@ -70,6 +95,17 @@ const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
       show: isMultiSeries,
     },
   };
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      // Clean up any remaining observer reference
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div ref={chartRef} className="bg-black/20 p-2 rounded-lg border border-green-500/20 w-full">

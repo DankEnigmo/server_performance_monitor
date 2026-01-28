@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import type { Metrics, StaticInfo } from "../types";
 
-const MAX_HISTORY_LENGTH = 120; // Keep last 2 minutes of data (at 1s interval)
+const MAX_HISTORY_LENGTH = 120;
 
 export const useSocket = (serverAddress: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -12,6 +12,7 @@ export const useSocket = (serverAddress: string) => {
   const [metricsHistory, setMetricsHistory] = useState<Metrics[]>([]);
 
   const historyRef = useRef<Metrics[]>([]);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const fullAddress = `http://${serverAddress}`;
@@ -20,13 +21,13 @@ export const useSocket = (serverAddress: string) => {
       reconnectionAttempts: 5,
     });
 
+    socketRef.current = newSocket;
     setSocket(newSocket);
 
-    newSocket.on("connect", () => setIsConnected(true));
-    newSocket.on("disconnect", () => setIsConnected(false));
-    newSocket.on("static-info", (data: StaticInfo) => setStaticInfo(data));
-
-    newSocket.on("metrics", (data: Metrics) => {
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+    const handleStaticInfo = (data: StaticInfo) => setStaticInfo(data);
+    const handleMetrics = (data: Metrics) => {
       setMetrics(data);
       historyRef.current = [...historyRef.current, data];
       if (historyRef.current.length > MAX_HISTORY_LENGTH) {
@@ -37,10 +38,32 @@ export const useSocket = (serverAddress: string) => {
       }
       // Set state with a copy to trigger re-render
       setMetricsHistory([...historyRef.current]);
-    });
+    };
 
+    newSocket.on("connect", handleConnect);
+    newSocket.on("disconnect", handleDisconnect);
+    newSocket.on("static-info", handleStaticInfo);
+    newSocket.on("metrics", handleMetrics);
+
+    // Cleanup function
     return () => {
-      newSocket.disconnect();
+      // Remove all event listeners before disconnecting
+      newSocket.off("connect", handleConnect);
+      newSocket.off("disconnect", handleDisconnect);
+      newSocket.off("static-info", handleStaticInfo);
+      newSocket.off("metrics", handleMetrics);
+
+      // Disconnect the socket
+      if (newSocket.connected) {
+        newSocket.disconnect();
+      }
+
+      // Clear references
+      if (socketRef.current === newSocket) {
+        socketRef.current = null;
+      }
+
+      // Clear history
       historyRef.current = [];
     };
   }, [serverAddress]);

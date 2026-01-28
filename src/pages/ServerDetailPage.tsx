@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSocket } from "../hooks/useSocket";
 import { useServers } from "../hooks/useServers";
 import AdvancedGauge from "../components/AdvancedGauge";
 import LineChart from "../components/LineChart";
+import TopProcesses from "../components/TopProcesses"; // Import the new component
 import { StorageBlock } from "../components/ui/StorageBlock";
 import {
   Tabs,
@@ -32,10 +33,16 @@ const ServerDetailPage: React.FC = () => {
     decodeURIComponent(serverAddress),
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (staticInfo) {
       console.log("Received Static Info:", staticInfo);
     }
+
+    // Cleanup function for this component
+    return () => {
+      // Any cleanup logic for this page would go here
+      // Currently, cleanup is handled in the useSocket hook
+    };
   }, [staticInfo]);
 
   // Filter out metrics history if staticInfo or metrics are null
@@ -199,11 +206,14 @@ const ServerDetailPage: React.FC = () => {
             <AdvancedGauge value={metrics.ram.percent} label="RAM" />
           </div>
 
-          {/* CPU & RAM Line Charts */}
+          {/* Main Charts & Processes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-lg">
             <LineChart data={cpuChartData} title="CPU Usage (%)" />
-            <LineChart data={cpuTempChartData} title="CPU Temp (°C)" />
             <LineChart data={ramChartData} title="RAM Usage (%)" />
+            <LineChart data={cpuTempChartData} title="CPU Temp (°C)" />
+            {metrics.processes && (
+              <TopProcesses processes={metrics.processes} />
+            )}
           </div>
 
           {/* GPU Tabs */}

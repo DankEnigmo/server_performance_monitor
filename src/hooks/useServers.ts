@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import type { Server } from '../types';
+import { useState, useEffect } from "react";
+import type { Server } from "../types";
 
-const STORAGE_KEY = 'monitoring_dashboard_servers_v2'; // Use a new key to avoid conflicts with old format
+const STORAGE_KEY = "monitoring_dashboard_servers_v2";
 
 export const useServers = () => {
   const [servers, setServers] = useState<Server[]>([]);
@@ -27,14 +27,14 @@ export const useServers = () => {
   };
 
   const addServer = (server: { name: string; address: string }) => {
-    if (server.address && !servers.some(s => s.address === server.address)) {
+    if (server.address && !servers.some((s) => s.address === server.address)) {
       const newServers = [...servers, server];
       saveServers(newServers);
     }
   };
 
   const removeServer = (address: string) => {
-    const newServers = servers.filter(s => s.address !== address);
+    const newServers = servers.filter((s) => s.address !== address);
     saveServers(newServers);
   };
 
