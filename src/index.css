@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@layer base {
+    html {
+        @apply font-mono;
+    }
+
+    body {
+        @apply bg-black text-green-500 font-mono;
+    }
+
+    input[type="text"] {
+        @apply bg-black border border-green-500/50 rounded px-3 py-2 text-white focus:outline-none focus:border-green-500;
+    }
+}
