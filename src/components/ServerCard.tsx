@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useSocket } from "../hooks/useSocket";
 import AdvancedGauge from "./AdvancedGauge";
@@ -17,9 +17,14 @@ const ServerCard: React.FC<ServerCardProps> = memo(({
 }) => {
   const { isConnected, metrics } = useSocket(address);
 
-  const cpuUsage = metrics?.cpu?.percent ?? 0;
-  const ramUsage = metrics?.ram?.percent ?? 0;
-  const gpuUsage = (metrics?.gpu?.[0]?.load ?? 0) * 100; // Assuming first GPU
+  // Memoize the metric values to prevent unnecessary re-renders
+  const { cpuUsage, ramUsage, gpuUsage } = useMemo(() => {
+    return {
+      cpuUsage: metrics?.cpu?.percent ?? 0,
+      ramUsage: metrics?.ram?.percent ?? 0,
+      gpuUsage: (metrics?.gpu?.[0]?.load ?? 0) * 100, // Assuming first GPU
+    };
+  }, [metrics]);
 
   return (
     <div className="relative border border-green-500/70 rounded-lg p-6 backdrop-blur-md">
@@ -40,9 +45,9 @@ const ServerCard: React.FC<ServerCardProps> = memo(({
       {isConnected && metrics && (
         <Link to={`/server/${encodeURIComponent(address)}`}>
           <div className="grid grid-cols-3 gap-6 text-center">
-            <AdvancedGauge value={cpuUsage} label="CPU" size={100} strokeWidth={10} />
-            <AdvancedGauge value={ramUsage} label="RAM" size={100} strokeWidth={10} />
-            <AdvancedGauge value={gpuUsage} label="GPU" size={100} strokeWidth={10} />
+            <AdvancedGauge value={cpuUsage} label="CPU" />
+            <AdvancedGauge value={ramUsage} label="RAM" />
+            <AdvancedGauge value={gpuUsage} label="GPU" />
           </div>
         </Link>
       )}

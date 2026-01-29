@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useState, useCallback } from "react";
+import React, { useRef, useLayoutEffect, useState, useCallback, useMemo } from "react";
 import UplotReact from "uplot-react";
 import "uplot/dist/uPlot.min.css";
 import type { AlignedData, Options, Series } from "uplot";
@@ -18,7 +18,28 @@ const seriesColors = [
   "#14b8a6", // teal-500
 ];
 
-const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
+// Function to downsample data for better performance
+const downsampleData = (data: AlignedData, maxPoints: number = 200): AlignedData => {
+  if (data[0].length <= maxPoints) return data; // Already within limits
+
+  const newData: AlignedData = [];
+  const step = Math.ceil(data[0].length / maxPoints);
+
+  for (let i = 0; i < data.length; i++) {
+    const seriesData = data[i];
+    const downsampledSeries = [];
+
+    for (let j = 0; j < seriesData.length; j += step) {
+      downsampledSeries.push(seriesData[j]);
+    }
+
+    newData.push(downsampledSeries);
+  }
+
+  return newData;
+};
+
+const LineChart: React.FC<LineChartProps> = React.memo(({ data, title }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [chartWidth, setChartWidth] = useState(400);
@@ -58,22 +79,28 @@ const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
     };
   }, [updateChartWidth]);
 
-  const isMultiSeries = data.length > 2;
+  // Downsample data for performance
+  const downsampledData = useMemo(() => downsampleData(data, 200), [data]);
 
-  const series: Series[] = [
-    {}, // x-axis
-  ];
+  const isMultiSeries = downsampledData.length > 2;
 
-  for (let i = 1; i < data.length; i++) {
-    series.push({
-      label: isMultiSeries ? `Core ${i - 1}` : "Value",
-      stroke: seriesColors[(i - 1) % seriesColors.length],
-      width: 2,
-      fill: "rgba(34, 197, 94, 0.05)",
-    });
-  }
+  const series: Series[] = useMemo(() => {
+    const seriesArr: Series[] = [
+      {}, // x-axis
+    ];
 
-  const options: Options = {
+    for (let i = 1; i < downsampledData.length; i++) {
+      seriesArr.push({
+        label: isMultiSeries ? `Core ${i - 1}` : "Value",
+        stroke: seriesColors[(i - 1) % seriesColors.length],
+        width: 2,
+        fill: "rgba(34, 197, 94, 0.05)",
+      });
+    }
+    return seriesArr;
+  }, [downsampledData, isMultiSeries]);
+
+  const options: Options = useMemo(() => ({
     title,
     width: chartWidth,
     height: 300,
@@ -94,7 +121,7 @@ const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
     legend: {
       show: isMultiSeries,
     },
-  };
+  }), [title, chartWidth, series, isMultiSeries]);
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -109,9 +136,11 @@ const LineChart: React.FC<LineChartProps> = ({ data, title }) => {
 
   return (
     <div ref={chartRef} className="bg-black/20 p-2 rounded-lg border border-green-500/20 w-full">
-      <UplotReact options={options} data={data} />
+      <UplotReact options={options} data={downsampledData} />
     </div>
   );
-};
+});
+
+LineChart.displayName = 'LineChart';
 
 export default LineChart;
