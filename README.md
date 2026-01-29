@@ -8,6 +8,17 @@ This is the web-based dashboard for the Real-Time Server Resource Monitoring sys
 *   **Real-time Metrics:** Displays live CPU, RAM, and GPU usage with sub-second latency.
 *   **Interactive Visualizations:** Utilizes `uPlot` for historical line charts and custom gauges.
 *   **Themed UI:** Features a "Matrix" theme with `green-500` accents and animated backgrounds.
+*   **High Performance:** Optimized for smooth rendering even with multiple servers and continuous metric updates.
+
+## Performance Optimizations
+
+The frontend includes several performance enhancements to ensure smooth operation:
+
+*   **Throttled Updates:** Metrics are processed at most once every 500ms to prevent excessive UI updates
+*   **Efficient Data Structures:** Uses circular buffers for metrics history to maintain constant memory usage
+*   **Component Memoization:** Heavily optimized with React.memo and useMemo to prevent unnecessary re-renders
+*   **Chart Data Sampling:** Automatically downsamples chart data to maintain rendering performance
+*   **Optimized Rendering:** Gauges and charts only update when values actually change
 
 ## Technology Stack
 
