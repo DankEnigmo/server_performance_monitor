@@ -1,4 +1,3 @@
-import React from "react";
 
 interface StorageProps {
   mount: string; // e.g., "C:/" or "/mnt/data"

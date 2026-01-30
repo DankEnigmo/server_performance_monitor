@@ -47,7 +47,9 @@ export const useSocket = (serverAddress: string) => {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [metricsHistory, setMetricsHistory] = useState<Metrics[]>([]);
 
-  const historyRef = useRef<CircularBuffer<Metrics>>(new CircularBuffer<Metrics>(MAX_HISTORY_LENGTH));
+  const historyRef = useRef<CircularBuffer<Metrics>>(
+    new CircularBuffer<Metrics>(MAX_HISTORY_LENGTH),
+  );
   const socketRef = useRef<Socket | null>(null);
   const lastUpdateRef = useRef<number>(0);
 

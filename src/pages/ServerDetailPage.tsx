@@ -11,19 +11,19 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../components/ui/tabs"; // Import shadcn/ui Tabs components
+} from "../components/ui/Tabs"; // Import shadcn/ui Tabs components
 import type { AlignedData } from "uplot";
 
 const ServerDetailPage: React.FC = () => {
   const { serverAddress } = useParams<{ serverAddress: string }>();
   const { servers } = useServers();
 
-  const currentServer = servers.find(
+  const currentServer = serverAddress ? servers.find(
     (s) => s.address === decodeURIComponent(serverAddress),
-  );
+  ) : undefined;
   const displayServerName = currentServer
     ? currentServer.name
-    : decodeURIComponent(serverAddress);
+    : serverAddress ? decodeURIComponent(serverAddress) : 'Unknown Server';
 
   if (!serverAddress) {
     return <div>Invalid server address.</div>;

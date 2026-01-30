@@ -32,7 +32,7 @@ const AdvancedGauge: React.FC<AdvancedGaugeProps> = React.memo(
 
     const gaugeOptions = useMemo(
       () => ({
-        type: "radial",
+        type: "radial" as const,
         minValue: 0,
         maxValue: max,
         arc: {
@@ -41,7 +41,7 @@ const AdvancedGauge: React.FC<AdvancedGaugeProps> = React.memo(
           subArcs: subArcs,
         },
         pointer: {
-          type: "needle",
+          type: "needle" as const,
           elastic: true,
           animationDuration: 1500,
           color: "#93f2a3",
@@ -50,7 +50,7 @@ const AdvancedGauge: React.FC<AdvancedGaugeProps> = React.memo(
         },
         labels: {
           valueLabel: {
-            formatTextValue: (val) => `${val.toFixed(0)}${unit}`,
+            formatTextValue: (val: number) => `${val.toFixed(0)}${unit}`,
             matchColorWithArc: true,
             style: {
               fontSize: "22px",
@@ -60,7 +60,7 @@ const AdvancedGauge: React.FC<AdvancedGaugeProps> = React.memo(
             offsetY: 25,
           },
           tickLabels: {
-            type: "inner",
+            type: "inner" as const,
             ticks: [
               { value: 0 },
               { value: max * 0.25 },
@@ -69,7 +69,7 @@ const AdvancedGauge: React.FC<AdvancedGaugeProps> = React.memo(
               { value: max },
             ],
             defaultTickValueConfig: {
-              formatTextValue: (val) => `${val}`,
+              formatTextValue: (val: number) => `${val}`,
               style: {
                 fill: "#a3e635", // lime-400
                 fontSize: 10,

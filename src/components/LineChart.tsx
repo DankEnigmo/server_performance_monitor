@@ -27,13 +27,15 @@ const downsampleData = (data: AlignedData, maxPoints: number = 200): AlignedData
 
   for (let i = 0; i < data.length; i++) {
     const seriesData = data[i];
-    const downsampledSeries = [];
+    const downsampledSeries: number[] = [];
 
     for (let j = 0; j < seriesData.length; j += step) {
-      downsampledSeries.push(seriesData[j]);
+      const value = seriesData[j];
+      downsampledSeries.push(value !== undefined && value !== null ? value : NaN);
     }
 
-    newData.push(downsampledSeries);
+    // Convert to Float64Array as expected by uPlot
+    newData.push(Float64Array.from(downsampledSeries));
   }
 
   return newData;
