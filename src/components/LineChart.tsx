@@ -1,4 +1,10 @@
-import React, { useRef, useLayoutEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useLayoutEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import UplotReact from "uplot-react";
 import "uplot/dist/uPlot.min.css";
 import type { AlignedData, Options, Series } from "uplot";
@@ -6,6 +12,9 @@ import type { AlignedData, Options, Series } from "uplot";
 interface LineChartProps {
   data: AlignedData;
   title: string;
+  yMin?: number;
+  yMax?: number;
+  unit?: string;
 }
 
 const seriesColors = [
@@ -19,7 +28,10 @@ const seriesColors = [
 ];
 
 // Function to downsample data for better performance
-const downsampleData = (data: AlignedData, maxPoints: number = 200): AlignedData => {
+const downsampleData = (
+  data: AlignedData,
+  maxPoints: number = 200,
+): AlignedData => {
   if (data[0].length <= maxPoints) return data; // Already within limits
 
   const newData: AlignedData = [];
@@ -31,7 +43,9 @@ const downsampleData = (data: AlignedData, maxPoints: number = 200): AlignedData
 
     for (let j = 0; j < seriesData.length; j += step) {
       const value = seriesData[j];
-      downsampledSeries.push(value !== undefined && value !== null ? value : NaN);
+      downsampledSeries.push(
+        value !== undefined && value !== null ? value : NaN,
+      );
     }
 
     // Convert to Float64Array as expected by uPlot
@@ -41,7 +55,13 @@ const downsampleData = (data: AlignedData, maxPoints: number = 200): AlignedData
   return newData;
 };
 
-const LineChart: React.FC<LineChartProps> = React.memo(({ data, title }) => {
+const LineChart: React.FC<LineChartProps> = React.memo(({ 
+  data, 
+  title,
+  yMin = 0,
+  yMax = 100,
+  unit = "%"
+}) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [chartWidth, setChartWidth] = useState(400);
@@ -97,33 +117,45 @@ const LineChart: React.FC<LineChartProps> = React.memo(({ data, title }) => {
         stroke: seriesColors[(i - 1) % seriesColors.length],
         width: 2,
         fill: "rgba(34, 197, 94, 0.05)",
+        scale: "y",
       });
     }
     return seriesArr;
   }, [downsampledData, isMultiSeries]);
 
-  const options: Options = useMemo(() => ({
-    title,
-    width: chartWidth,
-    height: 300,
-    padding: [15, 15, 15, 15],
-    series: series,
-    axes: [
-      {
-        stroke: "#22c55e",
-        grid: { show: true, stroke: "rgba(34, 197, 94, 0.1)" },
-        ticks: { stroke: "rgba(34, 197, 94, 0.3)" },
+  const options: Options = useMemo(
+    () => ({
+      title,
+      width: chartWidth,
+      height: 300,
+      padding: [15, 15, 15, 15],
+      series: series,
+      scales: {
+        y: {
+          auto: false,
+          range: [yMin, yMax],
+        },
       },
-      {
-        stroke: "#22c55e",
-        grid: { show: true, stroke: "rgba(34, 197, 94, 0.1)" },
-        ticks: { stroke: "rgba(34, 197, 94, 0.3)" },
+      axes: [
+        {
+          stroke: "#22c55e",
+          grid: { show: true, stroke: "rgba(34, 197, 94, 0.1)" },
+          ticks: { stroke: "rgba(34, 197, 94, 0.3)" },
+        },
+        {
+          stroke: "#22c55e",
+          grid: { show: true, stroke: "rgba(34, 197, 94, 0.1)" },
+          ticks: { stroke: "rgba(34, 197, 94, 0.3)" },
+          scale: "y",
+          values: (_self, ticks) => ticks.map((v) => v.toFixed(0) + unit),
+        },
+      ],
+      legend: {
+        show: isMultiSeries,
       },
-    ],
-    legend: {
-      show: isMultiSeries,
-    },
-  }), [title, chartWidth, series, isMultiSeries]);
+    }),
+    [title, chartWidth, series, isMultiSeries, yMin, yMax, unit],
+  );
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -137,12 +169,15 @@ const LineChart: React.FC<LineChartProps> = React.memo(({ data, title }) => {
   }, []);
 
   return (
-    <div ref={chartRef} className="bg-black/20 p-2 rounded-lg border border-green-500/20 w-full">
+    <div
+      ref={chartRef}
+      className="bg-black/20 p-2 rounded-lg border border-green-500/20 w-full"
+    >
       <UplotReact options={options} data={downsampledData} />
     </div>
   );
 });
 
-LineChart.displayName = 'LineChart';
+LineChart.displayName = "LineChart";
 
 export default LineChart;

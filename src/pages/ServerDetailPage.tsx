@@ -134,11 +134,15 @@ const ServerDetailPage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-lg">
                   <LineChart
                     data={gpuChartData}
-                    title={`GPU ${index} Load (%)`}
+                    title={`GPU ${index} Load`}
+                    unit="%"
                   />
                   <LineChart
                     data={gpuTempChartData}
-                    title={`GPU ${index} Temp (°C)`}
+                    title={`GPU ${index} Temperature`}
+                    yMin={0}
+                    yMax={100}
+                    unit="°C"
                   />
                 </div>
 
@@ -208,9 +212,9 @@ const ServerDetailPage: React.FC = () => {
 
           {/* Main Charts & Processes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-lg">
-            <LineChart data={cpuChartData} title="CPU Usage (%)" />
-            <LineChart data={ramChartData} title="RAM Usage (%)" />
-            <LineChart data={cpuTempChartData} title="CPU Temp (°C)" />
+            <LineChart data={cpuChartData} title="CPU Usage" unit="%" />
+            <LineChart data={ramChartData} title="RAM Usage" unit="%" />
+            <LineChart data={cpuTempChartData} title="CPU Temperature" yMin={0} yMax={100} unit="°C" />
             {metrics.processes && (
               <TopProcesses processes={metrics.processes} />
             )}

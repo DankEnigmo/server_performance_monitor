@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import type { Metrics, StaticInfo } from "../types";
 
 const MAX_HISTORY_LENGTH = 120;
-const METRICS_UPDATE_INTERVAL = 500; // Throttle updates to every 500ms
+const METRICS_UPDATE_INTERVAL = 1000; 
 
 // Efficient circular buffer implementation for metrics history
 class CircularBuffer<T> {
